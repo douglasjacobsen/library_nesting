@@ -12,7 +12,8 @@ def generate_directories(start_dir, max_levels):
 
 
     full_path = os.path.join(start_dir, max_level_string)
-    os.makedirs(full_path)
+    if not os.path.isdir(full_path):
+        os.makedirs(full_path)
 
     return full_path
 
@@ -60,7 +61,8 @@ def generate_library(base_dir, library_path, lib_number):
     makefile.write(source)
     makefile.close()
 
-    subprocess.check_call(['make'])
+    subprocess.check_call(['make', 'clean'])
+    subprocess.check_call(['make', 'lib'])
 
 def generate_libraries(lib_path, num_libs):
 
@@ -68,10 +70,45 @@ def generate_libraries(lib_path, num_libs):
 
     for i in range(0, num_libs):
         library_path = os.path.join(lib_path, 'library_{}'.format(i))
-        os.makedirs(library_path)
+        if not os.path.isdir(library_path):
+            os.makedirs(library_path)
         os.chdir(library_path)
 
         generate_library(start_dir, lib_path, i)
+
+def generate_tester(start_dir, lib_path, num_libs):
+    os.chdir(start_dir)
+    tester_dir = "{}/tester".format(start_dir)
+    if not os.path.isdir(tester_dir):
+        os.makedirs(tester_dir)
+
+    source  = "#include <stdio.h>\n"
+    source += "#include \"library{}.h\"\n\n".format(num_libs)
+    source += "int main(int *argc, char **argv){{\n"
+    source += "    printf(\"Main call. Level 0\\n\");\n"
+    source += "    library_call_{}(0);\n".format(num_libs)
+    source += "    return 0;\n"
+    source += "}\n\n"
+    source_file = open('test.cc', 'w+')
+    source_file.write(source)
+    source_file.close()
+
+    source  = "CC = icc\n"
+    source += "CFLAGS = -ipo -fPIC\n"
+    source += "SRCS = test.cc\n"
+    source += "EXEC = testing.x\n\n"
+    source += "LIBS = -L{}/library_{} -llibrary{}\n".format(lib_path, num_libs, num_libs)
+    source += "INC  = -I{}/library_{}\n".format(lib_path, num_libs)
+    source += "all:\n"
+    source += "\t$(CC) $(CFLAGS) $(INC) $(SRCS) -o $(EXEC) $(LIBS)\n"
+    source += "clean:\n"
+    source += "\trm -f *.o $(EXEC)\n"
+    makefile = open('Makefile', 'w+')
+    makefile.write(source)
+    makefile.close()
+
+    subprocess.check_call(['make', 'clean'])
+    subprocess.check_call(['make'])
 
 if __name__ == "__main__":
     start_dir = os.getcwd()
@@ -81,6 +118,7 @@ if __name__ == "__main__":
 
     lib_path = generate_directories(start_dir, num_levels)
     generate_libraries(lib_path, num_levels)
+    generate_tester(start_dir, lib_path, num_levels)
 
 
 
