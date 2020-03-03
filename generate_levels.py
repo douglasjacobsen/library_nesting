@@ -44,7 +44,7 @@ def generate_library(base_dir, library_path, lib_number):
 
     makefile = open('Makefile', 'w+')
     source  = "CC = icc\n"
-    source += "CFLAGS =-fPIC -shared\n"
+    source += "CFLAGS = -ipo -fPIC -shared\n"
     source += "SRCS = library{}.c\n".format(lib_number)
     source += "LIBRARY = liblibrary{}.so\n".format(lib_number)
     if lib_number > 0:
@@ -97,7 +97,7 @@ def generate_tester(start_dir, lib_path, num_libs):
     source_file.close()
 
     source  = "CC = icc\n"
-    source += "CFLAGS = -Bdynamic\n"
+    source += "CFLAGS = -ipo -Bdynamic\n"
     source += "SRCS = test.c\n"
     source += "EXEC = testing.x\n\n"
     source += "LIBS = -L{}/base_library -lbase\n".format(start_dir)
