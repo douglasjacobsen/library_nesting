@@ -123,7 +123,7 @@ if __name__ == "__main__":
     start_dir = os.getcwd()
     base_lib_dir = '{}/{}'.format(start_dir, 'base_library')
 
-    num_levels = 40
+    num_levels = 80
 
     lib_path = generate_directories(start_dir, num_levels)
     generate_libraries(lib_path, num_levels)
