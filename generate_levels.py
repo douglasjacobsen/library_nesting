@@ -47,9 +47,11 @@ def generate_library(base_dir, library_path, lib_number):
     if lib_number > 0:
         source += "INC = -I{}/library_{}\n".format(library_path, lib_number-1)
         source += "LIBS = -L{}/library_{} -llibrary{}\n".format(library_path, lib_number-1, lib_number-1)
+        source += "CFLAGS += -Wl,-rpath {}/library_{}\n".format(library_path, lib_number-1)
     else:
         source += "INC = -I{}/base_library\n".format(base_dir)
         source += "LIBS = -L{}/base_library -lbase\n".format(base_dir)
+        source += "CFLAGS += -Wl,-rpath {}/base_library\n".format(base_dir)
 
     source += "lib:\n"
     source += "\t$(CC) $(CFLAGS) $(INC) $(SRCS) -o $(LIBRARY) $(LIBS)\n\n"
